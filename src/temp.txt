@@ -1,0 +1,15 @@
+doctor: Amit mishra
+medicine: montex
+disease: cold and cough
+quantity: 2 times, 5 days
+
+doctor: Ajit mishra
+medicine: Paracetamol
+disease: fever
+quantity: 3 times, 5 days
+
+doctor: shashibala mishra
+medicine: ipill
+disease: abortion
+quantity: 1 time, 7 days
+
