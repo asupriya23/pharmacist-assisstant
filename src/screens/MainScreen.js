@@ -54,27 +54,35 @@ const TextOutput = styled.pre`
   white-space: pre-wrap;
 `;
 
-function MainScreen({ onGeneratePrescription }) {  // ✅ Receive the prop
+function MainScreen({ setPrescriptionData }) {
+  // ✅ Receive the prop
 
   const [image, setImage] = useState(null);
   const [recognizedText, setRecognizedText] = useState("");
   const [loading, setLoading] = useState(false);
-  const [formattedPrescription, setFormattedPrescription] = useState("Fetching prescription...");
+  const [formattedPrescription, setFormattedPrescription] = useState(
+    "Fetching prescription..."
+  );
   const navigate = useNavigate();
   const [prescription, setPrescription] = useState("");
-  const apiKey = "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"; // Replace with your actual API key
-//upload image
+  const apiKey =
+    "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"; // Replace with your actual API key
+  //upload image
   const handleImageChange = (e) => {
     setImage(e.target.files[0]);
     setRecognizedText(""); // Reset text when new image is uploaded
     setFormattedPrescription("Fetching prescription..."); // Reset prescription output
   };
-//navigation to prescription screen
+  //navigation to prescription screen
   const handleClick = () => {
-    onGeneratePrescription(prescription); // Pass the JSON object directly
+    setPrescriptionData(prescription); // Pass the JSON object directly
     navigate("/prescription");
   };
-//ocr pocessing and receiving recognised text
+
+  const handleClickStockUpdate = () => {
+    navigate("/update");
+  };
+  //ocr pocessing and receiving recognised text
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!image) {
@@ -88,11 +96,14 @@ function MainScreen({ onGeneratePrescription }) {  // ✅ Receive the prop
     setLoading(true);
 
     try {
-      const response = await axios.post("http://127.0.0.1:5000/predict", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      const response = await axios.post(
+        "http://127.0.0.1:5000/predict",
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        }
+      );
 
-      console.log("response:",response);
       setRecognizedText(response.data.transcription);
     } catch (error) {
       console.error("Error uploading image:", error);
@@ -101,7 +112,7 @@ function MainScreen({ onGeneratePrescription }) {  // ✅ Receive the prop
 
     setLoading(false);
   };
-// send the recieved text to llm and update formated prescription and pescription
+  // send the recieved text to llm and update formated prescription and pescription
   useEffect(() => {
     async function getFormattedPrescription() {
       if (!recognizedText) return;
@@ -128,40 +139,50 @@ function MainScreen({ onGeneratePrescription }) {  // ✅ Receive the prop
 
       console.log(recognizedText);
       try {
-        // const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-        //   method: "POST",
-        //   headers: {
-        //     "Authorization": `Bearer ${apiKey}`,
-        //     "Content-Type": "application/json",
-        //   },
-        //   body: JSON.stringify({
-        //     model: "cognitivecomputations/dolphin3.0-mistral-24b:free",
-        //     messages: [
-        //       {
-        //         role: "user",
-        //         content: [{ type: "text", text: prompt }],
-        //       },
-        //     ],
-        //   }),
-        // });
+        const response = await fetch(
+          "https://openrouter.ai/api/v1/chat/completions",
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${apiKey}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              model: "cognitivecomputations/dolphin3.0-mistral-24b:free",
+              messages: [
+                {
+                  role: "user",
+                  content: [{ type: "text", text: prompt }],
+                },
+              ],
+            }),
+          }
+        );
 
-        // const data = await response.json();
-        // console.log("data:",data);
+        const data = await response.json();
+        console.log("data:", data);
 
-        // if (!data.choices || data.choices.length === 0) {
-        //   throw new Error("Invalid API response: choices array is missing or empty.");
-        // }
+        if (!data.choices || data.choices.length === 0) {
+          throw new Error(
+            "Invalid API response: choices array is missing or empty."
+          );
+        }
 
-        
-      const temp_text = `[ 
-        { "doctor": "Amit Mishra", "medicine": "Montex", "quantity": null, "disease": "Cold and cough" },
-        { "doctor": "Ajit Mishra", "medicine": "Paracetamol", "quantity": 3, "days": 5, "disease": "Fever" },
-        { "doctor": "Shashibala Mishra", "medicine": "Ipill", "quantity": 1, "days": 5, "disease": "Abortion" }
-      ]`;
-      
-        const jsonData = JSON.parse(temp_text);
-        setFormattedPrescription(JSON.stringify(jsonData, null, 2));  // Ensure readable JSON string
-        setPrescription(jsonData);  // Keep JSON for further use
+        // const temp_text = `[
+        //   { "doctor": "Amit Mishra", "medicine": "Montex", "quantity": 4, "days": 3, "disease": "Cold and cough" },
+        //   { "doctor": "Ajit Mishra", "medicine": "Paracetamol", "quantity": 3, "days": 5, "disease": "Fever" },
+        //   { "doctor": "Shashibala Mishra", "medicine": "Pantoprazole", "quantity": 1000, "days": 5, "disease": "Abortion" }
+        // ]`;
+
+        // const jsonData = JSON.parse(temp_text);
+        // setFormattedPrescription(JSON.stringify(jsonData, null, 2));  // Ensure readable JSON string
+        // setPrescription(jsonData);  // Keep JSON for further use
+        const temp = data.choices[0].message["content"];
+        const cleanTemp = temp.startsWith("```json")
+          ? temp.split("\n").slice(1, -1).join("\n")
+          : temp;
+        setFormattedPrescription(cleanTemp); // Ensure readable JSON string
+        setPrescription(cleanTemp); // Keep JSON for further use
       } catch (error) {
         console.error("Error parsing JSON:", error);
         setFormattedPrescription("Error formatting prescription.");
@@ -177,21 +198,24 @@ function MainScreen({ onGeneratePrescription }) {  // ✅ Receive the prop
       <form onSubmit={handleSubmit}>
         <UploadLabel>
           Choose a File
-          <FileInput type="file" accept="image/*" onChange={handleImageChange} />
+          <FileInput
+            type="file"
+            accept="image/*"
+            onChange={handleImageChange}
+          />
         </UploadLabel>
         <Button primary type="submit" disabled={loading}>
           {loading ? "Processing..." : "Upload & Recognize"}
         </Button>
       </form>
-
       {recognizedText && (
         <>
           <TextOutput>{formattedPrescription}</TextOutput>
-          <Button onClick={handleClick}>
-            Generate Prescription
-          </Button>
+          <Button onClick={handleClick}>Generate Prescription</Button>
         </>
       )}
+      <Button onClick={handleClickStockUpdate}>Go to Stock Update</Button>{" "}
+      {/* New button */}
     </Container>
   );
 }

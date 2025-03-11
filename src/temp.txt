@@ -1,15 +1,44 @@
 doctor: Amit mishra
 medicine: montex
 disease: cold and cough
-quantity: 2 times, 5 days
+quantity: 20
+days: 50
 
 doctor: Ajit mishra
 medicine: Paracetamol
 disease: fever
-quantity: 3 times, 5 days
+quantity: 3
+days: 5
 
 doctor: shashibala mishra
-medicine: ipill
+medicine: Pantoprazole
 disease: abortion
-quantity: 1 time, 7 days
+quantity: 1
+days: 7
+
+doctor: Rajesh Sharma
+medicine: Cetirizine
+disease: allergy
+quantity: 1
+days: 3
+
+doctor: Pooja Verma
+medicine: Azithromycin
+disease: throat infection
+quantity: 1
+days: 3
+
+doctor: Manoj Kumar
+medicine: Ibuprofen
+disease: body pain
+quantity: 2
+days: 4
+
+doctor: Neha Singh
+medicine: Amoxicillin
+disease: bacterial infection
+quantity: 3
+days: 7
+
+
 

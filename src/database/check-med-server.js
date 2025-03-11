@@ -11,6 +11,18 @@ const db = new sqlite3.Database("./pharmacy.db", sqlite3.OPEN_READWRITE, (err) =
     }
 });
 
+const addMedicine = (medicine, disease, callback) => {
+    db.run("INSERT INTO medicines (medicine, disease) VALUES (?, ?)", 
+    [medicine, disease], function(err) {
+        if (err) {
+            console.error("❌ Error adding medicine:", err.message);
+            return callback(err, null);
+        }
+        console.log(`Medicine added with ID: ${this.lastID}`);
+        callback(null, { id: this.lastID, medicine, disease });
+    });
+};
+
 const app = express();
 app.use(cors({ origin: "http://localhost:3000", methods: ["GET", "POST"], credentials: true }));
 app.use(bodyParser.json());
@@ -41,13 +53,24 @@ app.post("/check-medicine", (req, res) => {
             } else {
                 console.log("❌ No Match Found");
                 res.json({ match: false, message: "❌ Medicine does NOT match the disease! Please check again!" });
-            }
+            } 
         }
     );
 });
 
+// API endpoint to add a new medicine to the medicine database
+app.post("/add-medicine", (req, res) => {
+    const { medicine, disease } = req.body;
+    
+    // Assuming you have a function to add medicine to your database
+    addMedicine(medicine, disease, (err, result) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json({ success: true, message: "Medicine added successfully" });
+    });
+});
+
 // get stock data
-const { getStock, updateStock, checkStock, deductStock } = require("./stock-update");
+const { getStock, updateStock, checkStock, deductStock, addStock } = require("./stock-update");
 
 app.get("/get-stock", (req, res) => {
     getStock((err, rows) => {
@@ -57,12 +80,13 @@ app.get("/get-stock", (req, res) => {
 });
 //update stock
 app.post("/update-stock", (req, res) => {
-    const { stockData } = req.body;
+    const stockData = req.body;
     updateStock(stockData, (err, result) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json(result);
     });
 });
+
 //check stock
 app.post("/check-stock", (req, res) => {
     const { medicine, requiredTablets } = req.body;
@@ -74,9 +98,21 @@ app.post("/check-stock", (req, res) => {
 //dedut stock
 app.post("/deduct-stock", (req, res) => {
     const { medicine, quantity } = req.body;
+    console.log("deduct", medicine, quantity);
     deductStock(medicine, quantity, (err, result) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json(result);
+    });
+});
+
+// API endpoint to add stock information to the stock database
+app.post("/add-stock", (req, res) => {
+    const { medicine, available, cost } = req.body;
+    
+    // Assuming you have a function to add stock to your database
+    addStock(medicine, available, cost, (err, result) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json({ success: true, message: "Stock added successfully" });
     });
 });
 
