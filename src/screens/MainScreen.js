@@ -132,7 +132,7 @@ function MainScreen({ setPrescriptionData }) {
   const navigate = useNavigate();
   const [prescription, setPrescription] = useState("");
   const apiKey =
-    "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"; // Replace with your actual API key
+    "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"; // Replace with your actual API key
   //upload image
   const handleImageChange = (e) => {
     setImage(e.target.files[0]);

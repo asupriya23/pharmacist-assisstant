@@ -11,6 +11,64 @@ import {
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
+
+const Container = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #e3f2fd;
+  padding: 40px 20px;
+`;
+
+const StyledCard = styled(Card)`
+  padding: 24px;
+  box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 900px;
+  background-color: #ffffff;
+  border-radius: 10px;
+  text-align: center;
+`;
+
+const Table = styled.table`
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  border-radius: 10px;
+  overflow: hidden;
+
+  th, td {
+    border: 1px solid #ddd;
+    padding: 12px;
+    text-align: center;
+    font-size: 16px;
+  }
+
+  th {
+    background-color: #1976d2;
+    color: white;
+  }
+`;
+
+const Button = styled.button`
+  background-color: ${props => (props.primary ? '#1976d2' : '#64b5f6')};
+  color: white;
+  border: none;
+  padding: 12px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.2);
+  display: block;
+  margin: 20px auto 0; /* Centers the button */
+
+  &:hover {
+    background-color: ${props => (props.primary ? '#1565c0' : '#42a5f5')};
+    box-shadow: 6px 6px 14px rgba(0, 0, 0, 0.3);
+  }
+`;
 const StockScreen = ({ prescriptionData }) => {
   console.log("Rendering StockScreen");
 
@@ -194,111 +252,59 @@ const StockScreen = ({ prescriptionData }) => {
   }
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-100 p-4">
-      <Card className="p-8 shadow-xl w-full max-w-4xl">
+    <Container>
+      <StyledCard>
         {loading ? (
           <Typography className="text-center text-gray-500 text-lg">
             Loading...
           </Typography>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="table-auto w-full border-collapse border border-gray-300">
-              <thead>
-                <tr className="bg-blue-600 text-white">
-                  <th className="border border-gray-300 px-6 py-3">
-                    Medicine Name
-                  </th>
-                  <th className="border border-gray-300 px-6 py-3">Doctor</th>
-                  <th className="border border-gray-300 px-6 py-3">
-                    Required Tablets
-                  </th>
-                  <th className="border border-gray-300 px-6 py-3">
-                    Available Tablets
-                  </th>
-                  <th className="border border-gray-300 px-6 py-3">
-                    Bill Amount
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {stockData.map((item, index) => {
-                  const requiredQty = item.quantity * item.days;
-                  return (
-                    <tr
-                      key={index}
-                      className="text-center odd:bg-gray-50 even:bg-white"
-                    >
-                      <td className="border border-gray-300 px-6 py-3">
-                        {item.medicine}
-                      </td>
-                      <td className="border border-gray-300 px-6 py-3">
-                        {item.doctor}
-                      </td>
-                      <td className="border border-gray-300 px-6 py-3">
-                        {requiredQty}
-                      </td>
-                      <td className="border border-gray-300 px-6 py-3">
-                        {item.stock < requiredQty ? (
-                          <>
-                            <Typography color="error" fontWeight="bold">
-                              {item.stock} (Low Stock)
-                            </Typography>
-
-                            <MuiButton
-                              onClick={() =>
-                                window.open("https://pharmeasy.in/", "_blank")
-                              }
-                            >
-                              Order Now
-                            </MuiButton>
-                          </>
-                        ) : (
-                          <Typography color="success" fontWeight="bold">
-                            {item.stock}
+          <Table>
+            <thead>
+              <tr>
+                <th>Medicine Name</th>
+                <th>Doctor</th>
+                <th>Required Tablets</th>
+                <th>Available Tablets</th>
+                <th>Bill Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              {stockData.map((item, index) => {
+                const requiredQty = item.quantity * item.days;
+                return (
+                  <tr key={index}>
+                    <td>{item.medicine}</td>
+                    <td>{item.doctor}</td>
+                    <td>{requiredQty}</td>
+                    <td>
+                      {item.stock < requiredQty ? (
+                        <>
+                          <Typography color="error" fontWeight="bold">
+                            {item.stock} (Low Stock)
                           </Typography>
-                        )}
-                      </td>
-                      <td className="border border-gray-300 px-6 py-3">
-                        {item.stock >= requiredQty
-                          ? `Rs.${item.cost * requiredQty}`
-                          : "-"}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+                          <Button onClick={() => window.open("https://pharmeasy.in/", "_blank")}>Order Now</Button>
+                        </>
+                      ) : (
+                        <Typography color="success" fontWeight="bold">
+                          {item.stock}
+                        </Typography>
+                      )}
+                    </td>
+                    <td>{item.stock >= requiredQty ? `Rs.${item.cost * requiredQty}` : "-"}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </Table>
         )}
-
         <Typography className="mt-6 text-2xl font-semibold text-blue-600 text-center">
           Total Bill: Rs.{billAmount}
         </Typography>
-
-        <MuiButton
-          variant="contained"
-          color="primary"
-          className="mt-6 w-full"
-          onClick={generatePDF}
-        >
-          Print Bill
-        </MuiButton>
-      </Card>
-    </div>
+        <Button primary onClick={generatePDF}>Print Bill</Button>
+      </StyledCard>
+    </Container>
   );
 };
 
 export default StockScreen;
-
-const PrimaryButton = styled.button`
-  padding: 8px 12px;
-
-  background-color: #28a745;
-  color: white;
-  border: none;
-  cursor: pointer;
-
-  &:hover {
-    background-color: #218838;
-  }
-`;

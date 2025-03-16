@@ -3,6 +3,70 @@ import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import axios from "axios";
 
+
+const Container = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  min-height: 100vh;
+  background-color: #e3f2fd;
+  padding: 40px 20px;
+`;
+
+const Title = styled.h2`
+  color: #1565c0;
+  margin-bottom: 20px;
+  font-size: 2.5rem;
+  font-weight: bold;
+`;
+
+const Table = styled.table`
+  width: 90%;
+  max-width: 900px;
+  border-collapse: collapse;
+  margin-top: 20px;
+  background-color: #ffffff;
+  border-radius: 10px;
+  box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+
+  th, td {
+    border: 1px solid #ddd;
+    padding: 12px;
+    text-align: center;
+    font-size: 16px;
+  }
+
+  th {
+    background-color: #1976d2;
+    color: white;
+  }
+`;
+
+const ButtonContainer = styled.div`
+  margin-top: 20px;
+  display: flex;
+  gap: 20px;
+`;
+
+const Button = styled.button`
+  background-color: ${props => (props.primary ? '#1976d2' : '#64b5f6')};
+  color: white;
+  border: none;
+  padding: 12px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.2);
+
+  &:hover {
+    background-color: ${props => (props.primary ? '#1565c0' : '#42a5f5')};
+    box-shadow: 6px 6px 14px rgba(0, 0, 0, 0.3);
+  }
+`;
+
 const PrescriptionScreen = ({ setPrescriptionData, prescriptionData }) => {
   const [validationResults, setValidationResults] = useState({});
   const [medicine, setMedicine] = useState("");
@@ -124,14 +188,15 @@ const PrescriptionScreen = ({ setPrescriptionData, prescriptionData }) => {
       <Container>
         <h2>Prescription Details</h2>
         <p>No valid prescription data available.</p>
-        <BackButton onClick={() => navigate("/")}>Go Back</BackButton>
+        <Button onClick={() => navigate("/")}>Go Back</Button>
+
       </Container>
     );
   }
 
   return (
     <Container>
-      <h2>Prescription Details</h2>
+      <Title>Prescription Details</Title>
       <Table>
         <thead>
           <tr>
@@ -151,74 +216,45 @@ const PrescriptionScreen = ({ setPrescriptionData, prescriptionData }) => {
           ) : (
             parsedData.map((prescription, index) => (
               <tr key={index}>
-                <td
-                  contentEditable
-                  suppressContentEditableWarning
-                  onBlur={(e) => {
+                <td contentEditable suppressContentEditableWarning onBlur={(e) => {
                     const updatedPrescriptions = [...parsedData];
                     updatedPrescriptions[index].doctor = e.target.innerText;
                     setPrescriptionData(updatedPrescriptions);
-                  }}
-                >
+                  }}>
                   {prescription.doctor || "N/A"}
                 </td>
 
-                <td
-                  contentEditable
-                  suppressContentEditableWarning
-                  onBlur={(e) => {
+                <td contentEditable suppressContentEditableWarning onBlur={(e) => {
                     const updatedPrescriptions = [...parsedData];
                     updatedPrescriptions[index].medicine = e.target.innerText;
                     setPrescriptionData(updatedPrescriptions);
-                    setMedicine(e.target.innerText);
-                    checkMedicine(
-                      e.target.innerText,
-                      prescription.disease,
-                      index
-                    );
-                  }}
-                >
+                    checkMedicine(e.target.innerText, prescription.disease, index);
+                  }}>
                   {prescription.medicine || "N/A"}
                 </td>
 
-                <td
-                  contentEditable
-                  suppressContentEditableWarning
-                  onBlur={(e) => {
+                <td contentEditable suppressContentEditableWarning onBlur={(e) => {
                     const updatedPrescriptions = [...parsedData];
                     updatedPrescriptions[index].quantity = e.target.innerText;
                     setPrescriptionData(updatedPrescriptions);
-                  }}
-                >
+                  }}>
                   {prescription.quantity || "N/A"}
                 </td>
 
-                <td
-                  contentEditable
-                  suppressContentEditableWarning
-                  onBlur={(e) => {
+                <td contentEditable suppressContentEditableWarning onBlur={(e) => {
                     const updatedPrescriptions = [...parsedData];
                     updatedPrescriptions[index].days = e.target.innerText;
                     setPrescriptionData(updatedPrescriptions);
-                  }}
-                >
+                  }}>
                   {prescription.days || "N/A"}
                 </td>
 
-                <td
-                  contentEditable
-                  suppressContentEditableWarning
-                  onBlur={(e) => {
+                <td contentEditable suppressContentEditableWarning onBlur={(e) => {
                     const updatedPrescriptions = [...parsedData];
                     updatedPrescriptions[index].disease = e.target.innerText;
                     setPrescriptionData(updatedPrescriptions);
-                    checkMedicine(
-                      prescription.medicine,
-                      e.target.innerText,
-                      index
-                    );
-                  }}
-                >
+                    checkMedicine(prescription.medicine, e.target.innerText, index);
+                  }}>
                   {prescription.disease || "N/A"}
                 </td>
 
@@ -230,66 +266,13 @@ const PrescriptionScreen = ({ setPrescriptionData, prescriptionData }) => {
           )}
         </tbody>
       </Table>
-      <BackButton onClick={() => navigate("/")}>Go Back</BackButton>
-      <PrimaryButton onClick={() => navigate("/stock")}>
-        Proceed to Stock
-      </PrimaryButton>
+      <ButtonContainer>
+        <Button onClick={() => navigate('/')}>Go Back</Button>
+        <Button primary onClick={() => navigate('/stock')}>Proceed to Stock</Button>
+      </ButtonContainer>
     </Container>
   );
 };
 
 export default PrescriptionScreen;
 
-// Styled Components
-const Container = styled.div`
-  text-align: center;
-  padding: 20px;
-`;
-
-const Table = styled.table`
-  width: 80%;
-  margin: auto;
-  border-collapse: collapse;
-  margin-top: 20px;
-  border: 1px solid #ddd;
-
-  th,
-  td {
-    border: 1px solid #ddd;
-    padding: 10px;
-    text-align: center;
-  }
-
-  th {
-    background-color: #4caf50;
-    color: white;
-  }
-`;
-
-const BackButton = styled.button`
-  margin-top: 20px;
-  padding: 10px 20px;
-  font-size: 16px;
-  cursor: pointer;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 5px;
-
-  &:hover {
-    background-color: #0056b3;
-  }
-`;
-
-const PrimaryButton = styled.button`
-  padding: 8px 12px;
-
-  background-color: #28a745;
-  color: white;
-  border: none;
-  cursor: pointer;
-
-  &:hover {
-    background-color: #218838;
-  }
-`;
