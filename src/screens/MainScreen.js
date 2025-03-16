@@ -4,25 +4,79 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
 const Container = styled.div`
-  text-align: center;
-  padding: 30px;
-  background-color: #f4f4f9;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
   min-height: 100vh;
-  font-family: Arial, sans-serif;
+  background-color: #e3f2fd; /* Light blue medical theme */
+  padding-top: 80px; /* Shift content to upper half */
+  position: relative;
+`;
+
+const Navbar = styled.div`
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-bottom: 30px;
+`;
+
+const Dropdown = styled.div`
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+`;
+
+const DropdownText = styled.span`
+  font-size: 18px;
+  color:rgb(0, 4, 8);
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+`;
+
+const DropdownContent = styled.div`
+  display: ${props => (props.show ? 'block' : 'none')};
+  position: absolute;
+  background-color: #ffffff;
+  min-width: 250px;
+  box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.1);
+  padding: 15px;
+  border-radius: 5px;
+  z-index: 1;
+  top: 25px;
+  font-size: 14px;
+  line-height: 1.5;
 `;
 
 const Title = styled.h1`
-  font-size: 32px;
-  color: #2c3e50;
+  color: #1565c0;
   margin-bottom: 20px;
+  font-size: 4rem; /* Increase size */
+  font-weight: bold;
+  margin-top: 20px; /* Ensure spacing above dropdowns */
 `;
 
 const UploadLabel = styled.label`
-  display: block;
-  font-size: 18px;
-  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #ffffff;
+  padding: 16px;
+  border-radius: 10px;
+  border: 1px solid #90caf9;
   cursor: pointer;
-  color: #3498db;
+  transition: all 0.3s ease;
+  box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.1);
+  margin-bottom: 25px;
+  width: 260px;
+  text-align: center;
+
+  &:hover {
+    background-color: #bbdefb;
+  }
 `;
 
 const FileInput = styled.input`
@@ -30,33 +84,45 @@ const FileInput = styled.input`
 `;
 
 const Button = styled.button`
-  background-color: ${(props) => (props.primary ? "#3498db" : "#2ecc71")};
+  background-color: ${props => (props.primary ? '#1976d2' : '#64b5f6')};
   color: white;
-  font-size: 16px;
-  padding: 10px 20px;
-  margin: 10px;
   border: none;
-  border-radius: 5px;
+  padding: 14px 20px;
+  border-radius: 8px;
   cursor: pointer;
-  transition: background 0.3s ease;
+  font-size: 18px;
+  margin: 15px;
+  transition: all 0.3s ease;
+  box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.2);
+  width: 230px;
+  text-align: center;
 
   &:hover {
-    background-color: ${(props) => (props.primary ? "#2980b9" : "#27ae60")};
+    background-color: ${props => (props.primary ? '#1565c0' : '#42a5f5')};
+    box-shadow: 6px 6px 14px rgba(0, 0, 0, 0.3);
+  }
+
+  &:disabled {
+    background-color: #b0bec5;
+    cursor: not-allowed;
   }
 `;
 
-const TextOutput = styled.pre`
-  background: #ecf0f1;
-  padding: 15px;
-  border-radius: 5px;
-  text-align: left;
-  margin-top: 20px;
-  white-space: pre-wrap;
+const TextOutput = styled.div`
+  background-color: #ffffff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.1);
+  margin: 25px 0;
+  max-width: 650px;
+  text-align: center;
 `;
+
+
 
 function MainScreen({ setPrescriptionData }) {
   // ✅ Receive the prop
-
+  const [dropdown, setDropdown] = useState(null);
   const [image, setImage] = useState(null);
   const [recognizedText, setRecognizedText] = useState("");
   const [loading, setLoading] = useState(false);
@@ -66,7 +132,7 @@ function MainScreen({ setPrescriptionData }) {
   const navigate = useNavigate();
   const [prescription, setPrescription] = useState("");
   const apiKey =
-    "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"; // Replace with your actual API key
+    "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"; // Replace with your actual API key
   //upload image
   const handleImageChange = (e) => {
     setImage(e.target.files[0]);
@@ -192,17 +258,43 @@ function MainScreen({ setPrescriptionData }) {
     getFormattedPrescription();
   }, [recognizedText]); // Runs only when `recognizedText` changes
 
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (!event.target.closest('.dropdown')) {
+        setDropdown(null);
+      }
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, []);
+  const dropdownContent = {
+    About: "MediScan is a cutting-edge pharmacist assistant that scans prescriptions, generates a structured prescription table, verifies stock, and facilitates billing—all in one seamless process.",
+    Contact: "For inquiries and support, reach out to us via email at support@mediscan.com or call us at (123) 456-7890.",
+    Services: "Our services include prescription scanning, automated stock verification, seamless billing integration, and real-time medicine availability updates."
+  };
+
   return (
     <Container>
       <Title>MediScan</Title>
+      <Navbar>
+        {Object.keys(dropdownContent).map((item) => (
+          <Dropdown key={item} className="dropdown">
+            <DropdownText onClick={(e) => { e.stopPropagation(); setDropdown(dropdown === item ? null : item); }}>
+              {item} ⌄
+            </DropdownText>
+            <DropdownContent show={dropdown === item}>
+              <p>{dropdownContent[item]}</p>
+            </DropdownContent>
+          </Dropdown>
+        ))}
+      </Navbar>
       <form onSubmit={handleSubmit}>
         <UploadLabel>
           Choose a File
-          <FileInput
-            type="file"
-            accept="image/*"
-            onChange={handleImageChange}
-          />
+          <FileInput type="file" accept="image/*" onChange={handleImageChange} />
         </UploadLabel>
         <Button primary type="submit" disabled={loading}>
           {loading ? "Processing..." : "Upload & Recognize"}
@@ -214,8 +306,7 @@ function MainScreen({ setPrescriptionData }) {
           <Button onClick={handleClick}>Generate Prescription</Button>
         </>
       )}
-      <Button onClick={handleClickStockUpdate}>Go to Stock Update</Button>{" "}
-      {/* New button */}
+      <Button onClick={handleClickStockUpdate}>Go to Stock Update</Button>
     </Container>
   );
 }
